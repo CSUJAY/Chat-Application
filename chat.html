@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #e6f7e8;
+        }
+
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .chat-box {
+            width: 300px;
+            height: 400px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .message {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+
+        .message-sent {
+            background-color: #dcf8c6;
+            align-self: flex-end;
+        }
+
+        .message-received {
+            background-color: #ffffff;
+            align-self: flex-start;
+        }
+
+        .input-container {
+            display: flex;
+            margin-top: 10px;
+        }
+
+        input[type="text"] {
+            width: 200px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            padding: 10px;
+            background-color: #25D366;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #128C7E;
+        }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="chat-box" id="chatBox">
+        <div class="message message-received">Hello! How can I help you?</div>
+    </div>
+
+    <div class="input-container">
+        <input type="text" id="messageInput" placeholder="Type your message">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+</div>
+
+<script>
+    function sendMessage() {
+        var chatBox = document.getElementById('chatBox');
+        var messageInput = document.getElementById('messageInput');
+        var messageText = messageInput.value;
+
+        if (messageText.trim() !== '') {
+            var messageElement = document.createElement('div');
+            messageElement.classList.add('message', 'message-sent');
+            messageElement.textContent = messageText;
+
+            chatBox.appendChild(messageElement);
+            messageInput.value = '';
+
+            chatBox.scrollTop = chatBox.scrollHeight; // Scroll to the bottom
+        }
+    }
+</script>
+
+</body>
+</html>
