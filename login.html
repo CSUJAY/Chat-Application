@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Login with Security Question</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .dark-mode {
+            background-color: #2c2c2c;
+            color: #f4f4f4;
+        }
+        .login-container, .register-container, .unlock-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            width: 400px;
+            text-align: center;
+            position: relative;
+        }
+        h2 {
+            margin-bottom: 20px;
+        }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .error-message {
+            color: red;
+            display: none;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #25D366;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #128C7E;
+        }
+        .signup-link, .forgot-password {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #555;
+        }
+        .signup-link a, .forgot-password a {
+            color: #25D366;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .remember-me {
+            margin-top: 10px;
+            text-align: left;
+        }
+        .password-strength {
+            text-align: left;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-container" id="login-container">
+    <h2>Login</h2>
+    <div id="error-message" class="error-message"></div>
+    <form id="loginForm">
+        <input type="text" id="username" placeholder="Username" required autofocus>
+        <div class="password-container">
+            <input type="password" id="password" placeholder="Password" required>
+            <span class="show-password" onclick="togglePassword()">👁️</span>
+        </div>
+        <div class="remember-me">
+            <label>
+                <input type="checkbox" id="rememberMe"> Remember Me
+            </label>
+        </div>
+        <button type="button" onclick="validateLogin()">Login</button>
+        <div class="forgot-password">
+            <a href="#" onclick="showResetPassword()">Forgot Password?</a>
+        </div>
+    </form>
+    <div class="signup-link">
+        Don't have an account? <a href="#" onclick="showRegister()">Sign Up</a>
+    </div>
+</div>
+
+<div class="register-container" id="register-container" style="display: none;">
+    <h2>Register</h2>
+    <div id="register-error-message" class="error-message"></div>
+    <input type="text" id="reg-username" placeholder="Choose a Username" required>
+    <input type="password" id="reg-password" placeholder="Choose a Password" required>
+    <div class="password-strength">
+        Password strength: <span id="strength-output"></span>
+    </div>
+    <!-- Security Question Setup -->
+    <input type="text" id="security-question" placeholder="Enter a security question" required>
+    <input type="text" id="security-answer" placeholder="Enter the answer to the security question" required>
+    <button type="button" onclick="register()">Register</button>
+    <button type="button" onclick="showLogin()">Back to Login</button>
+</div>
+
+<div class="reset-password-container" id="reset-password-container" style="display: none;">
+    <h2>Reset Password</h2>
+    <div id="reset-error-message" class="error-message"></div>
+    <input type="text" id="reset-username" placeholder="Enter Username" required>
+    <button type="button" onclick="resetPassword()">Reset Password</button>
+    <button type="button" onclick="showLogin()">Back to Login</button>
+</div>
+
+<div class="unlock-container" id="unlock-container" style="display: none;">
+    <h2>Unlock Account</h2>
+    <div id="unlock-error-message" class="error-message"></div>
+    <input type="text" id="unlock-username" placeholder="Enter Username" required>
+    <div id="unlock-question-container" style="display: none;">
+        <p id="unlock-question"></p>
+        <input type="text" id="unlock-answer" placeholder="Answer the security question" required>
+    </div>
+    <button type="button" onclick="unlockAccount()">Unlock Account</button>
+    <button type="button" onclick="showLogin()">Back to Login</button>
+</div>
+
+<script>
+    let users = JSON.parse(localStorage.getItem('users')) || {}; // Load users from localStorage
+    let loginAttempts = 0; // Track login attempts
+
+    // Toggle password visibility
+    function togglePassword() {
+        const passwordInput = document.getElementById('password');
+        passwordInput.type = passwordInput.type === 'password' ? 'text' : 'password';
+    }
+
+    // Password strength check
+    const passwordInput = document.getElementById('reg-password');
+    const strengthOutput = document.getElementById('strength-output');
+    passwordInput.addEventListener('input', () => {
+        const strength = checkPasswordStrength(passwordInput.value);
+        strengthOutput.textContent = strength;
+    });
+
+    function checkPasswordStrength(password) {
+        let strength = 'Weak';
+        if (password.length >= 8 && /[A-Z]/.test(password) && /[0-9]/.test(password)) {
+            strength = 'Medium';
+        }
+        if (password.length >= 10 && /[A-Z]/.test(password) && /[0-9]/.test(password) && /[!@#$%^&*]/.test(password)) {
+            strength = 'Strong';
+        }
+        return strength;
+    }
+
+    // Validate login
+    function validateLogin() {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const rememberMe = document.getElementById('rememberMe').checked;
+        const errorMessage = document.getElementById('error-message');
+
+        if (localStorage.getItem(username + '-locked')) {
+            const lockTime = localStorage.getItem(username + '-lockTime');
+            const currentTime = Date.now();
+            if (currentTime - lockTime >= 5 * 60 * 1000) { // Unlock after 5 minutes
+                localStorage.removeItem(username + '-locked');
+                localStorage.removeItem(username + '-lockTime');
+                alert('Your account has been unlocked after 5 minutes.');
+            } else {
+                errorMessage.textContent = 'Your account is locked. Please wait or answer the security question to unlock.';
+                errorMessage.style.display = 'block';
+                showUnlockAccount(username); // Show unlock option
+                return;
+            }
+        }
+
+        if (loginAttempts >= 3) {
+            localStorage.setItem(username + '-locked', 'true');
+            localStorage.setItem(username + '-lockTime', Date.now());
+            errorMessage.textContent = 'Too many failed attempts. Your account is locked for 5 minutes.';
+            errorMessage.style.display = 'block';
+            return;
+        }
+
+        if (users[username] && users[username].password === password) {
+            alert('Login successful!');
+            loginAttempts = 0;
+            if (rememberMe) {
+                localStorage.setItem('rememberedUser', username);
+            } else {
+                localStorage.removeItem('rememberedUser');
+            }
+            window.location.href = 'chat.html'; // Redirect after login
+        } else {
+            loginAttempts++;
+            errorMessage.textContent = 'Invalid credentials, please try again.';
+            errorMessage.style.display = 'block';
+        }
+    }
+
+    function showRegister() {
+        document.getElementById('login-container').style.display = 'none';
+        document.getElementById('register-container').style.display = 'block';
+        document.getElementById('register-error-message').style.display = 'none';
+    }
+
+    function showLogin() {
+        document.getElementById('login-container').style.display = 'block';
+        document.getElementById('register-container').style.display = 'none';
+        document.getElementById('reset-password-container').style.display = 'none';
+        document.getElementById('unlock-container').style.display = 'none';
+    }
+
+    function showResetPassword() {
+        document.getElementById('login-container').style.display = 'none';
+        document.getElementById('reset-password-container').style.display = 'block';
+        document.getElementById('reset-error-message').style.display = 'none';
+    }
+
+    function showUnlockAccount(username) {
+        document.getElementById('login-container').style.display = 'none';
+        document.getElementById('unlock-container').style.display = 'block';
+        document.getElementById('unlock-error-message').style.display = 'none';
+
+        // Display security question for the user
+        const unlockQuestionContainer = document.getElementById('unlock-question-container');
+        const unlockQuestion = document.getElementById('unlock-question');
+        if (users[username] && users[username].securityQuestion) {
+            unlockQuestion.textContent = users[username].securityQuestion;
+            unlockQuestionContainer.style.display = 'block';
+        } else {
+            unlockQuestionContainer.style.display = 'none';
+        }
+    }
+
+    function register() {
+        const username = document.getElementById('reg-username').value;
+        const password = document.getElementById('reg-password').value;
+        const securityQuestion = document.getElementById('security-question').value;
+        const securityAnswer = document.getElementById('security-answer').value;
+        const registerErrorMessage = document.getElementById('register-error-message');
+
+        // Validate inputs
+        if (username.length < 3 || password.length < 6 || securityQuestion.length === 0 || securityAnswer.length === 0) {
+            registerErrorMessage.textContent = 'Please fill in all fields correctly.';
+            registerErrorMessage.style.display = 'block';
+            return;
+        }
+
+        if (users[username]) {
+            registerErrorMessage.textContent = 'Username already exists. Choose a different one.';
+            registerErrorMessage.style.display = 'block';
+        } else {
+            users[username] = {
+                password: password,
+                securityQuestion: securityQuestion,
+                securityAnswer: securityAnswer.toLowerCase() // Save the answer in lowercase for case-insensitive comparison
+            };
+            localStorage.setItem('users', JSON.stringify(users)); // Save users to localStorage
+            alert('Registration successful! You can now log in.');
+            showLogin();
+        }
+    }
+
+    function resetPassword() {
+        const username = document.getElementById('reset-username').value;
+        const resetErrorMessage = document.getElementById('reset-error-message');
+
+        if (users[username]) {
+            const newPassword = prompt('Enter your new password:');
+            if (newPassword) {
+                users[username].password = newPassword; // Update password
+                localStorage.setItem('users', JSON.stringify(users)); // Save changes
+                alert('Password reset successful! You can now log in.');
+                showLogin();
+            }
+        } else {
+            resetErrorMessage.textContent = 'Username not found.';
+            resetErrorMessage.style.display = 'block';
+        }
+    }
+
+    function unlockAccount() {
+        const username = document.getElementById('unlock-username').value;
+        const answer = document.getElementById('unlock-answer').value;
+        const unlockErrorMessage = document.getElementById('unlock-error-message');
+
+        if (users[username] && users[username].securityAnswer === answer.toLowerCase()) {
+            localStorage.removeItem(username + '-locked'); // Unlock the account
+            localStorage.removeItem(username + '-lockTime'); // Remove lock time
+            alert('Your account has been unlocked. You can now log in.');
+            showLogin();
+        } else {
+            unlockErrorMessage.textContent = 'Incorrect answer to security question.';
+            unlockErrorMessage.style.display = 'block';
+        }
+    }
+
+    // Load remembered user on page load
+    window.onload = function() {
+        const rememberedUser = localStorage.getItem('rememberedUser');
+        if (rememberedUser) {
+            document.getElementById('username').value = rememberedUser;
+            document.getElementById('rememberMe').checked = true;
+        }
+    };
+</script>
+
+</body>
+</html>
