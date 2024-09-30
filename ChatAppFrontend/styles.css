@@ -1,0 +1,147 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background-color: #f8f9fa;
+}
+
+.app {
+    display: flex;
+    height: 100vh;
+    background-color: #fff;
+}
+
+.sidebar {
+    flex: 0.35;
+    background-color: #ffffff;
+    border-right: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar__header {
+    padding: 15px;
+    background-color: #ededed;
+    border-bottom: 1px solid #e0e0e0;
+    text-align: center;
+}
+
+.sidebar__search {
+    padding: 10px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.sidebar__search input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 20px;
+    border: 1px solid #e0e0e0;
+}
+
+.sidebar__contacts {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.sidebar__contact {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #e0e0e0;
+    cursor: pointer;
+}
+
+.sidebar__contact:hover {
+    background-color: #f1f1f1;
+}
+
+.contact__img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.chatWindow {
+    flex: 0.65;
+    display: flex;
+    flex-direction: column;
+    background-color: #f8f9fa;
+}
+
+.chatWindow__header {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background-color: #ededed;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.chat__user-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.chatWindow__body {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background-color: #e5ddd5;
+    display: flex;
+    flex-direction: column;
+}
+
+.message {
+    max-width: 60%;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+.message.received {
+    background-color: white;
+    align-self: flex-start;
+}
+
+.message.sent {
+    color:white;
+    background-color: #0e75f4;
+    align-self: flex-end;
+}
+
+.chatWindow__footer {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background-color: #ededed;
+    border-top: 1px solid #e0e0e0;
+}
+
+.chatWindow__footer input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 20px;
+    border: 1px solid #e0e0e0;
+    margin-right: 10px;
+}
+
+.chatWindow__footer button {
+    padding: 10px 20px;
+    background-color: #0e75f4;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+.chatWindow__footer button:hover {
+    background-color: #0e75f4;
+}
